@@ -5,6 +5,7 @@ add_library(${PROJECT_NAME}
   src/mymalloc.cpp
   src/myfree.cpp
   src/memory-header.cpp
+  src/coalesce.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
