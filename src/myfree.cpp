@@ -2,6 +2,7 @@
 #include "my-memory-allocator.hpp"
 
 void myfree(void* payload) {
+  std::lock_guard<std::mutex> lock(mtx);
   auto* target = GetMemoryHeader(payload);
   target->is_free = true;
 

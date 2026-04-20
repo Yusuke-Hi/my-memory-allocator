@@ -4,11 +4,12 @@
 
 #include "my-memory-allocator.hpp"
 
-bool first_call{true};
-const size_t kLargeChunkSize{1024 * 1024};
+static bool first_call{true};
 MemoryHeader* free_list{nullptr};
+static const size_t kLargeChunkSize{1024 * 1024};
 
 void* mymalloc(size_t arg_size) {
+  std::lock_guard<std::mutex> lock{mtx};
   if (first_call) {
     free_list = static_cast<MemoryHeader*>(
         mmap(NULL, kLargeChunkSize, PROT_READ | PROT_WRITE,
