@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <future>
+#include <thread>
+
 #include "my-memory-allocator.hpp"
 
 constexpr size_t kBasicBlockSize{64};
@@ -68,4 +71,27 @@ TEST(MyMallocTest, CoalesceBoth) {
 
   myfree(p4);
   myfree(p5);
+}
+
+void UseAllocator(size_t size) {
+  void* p = mymalloc(size);
+  EXPECT_NE(p, nullptr);
+  myfree(p);
+}
+
+TEST(MyMallocTest, MultiThread) {
+  std::promise<void> go;
+  std::shared_future<void> ready = go.get_future().share();
+  auto task = [&ready]() {
+    ready.wait();
+    UseAllocator(kBasicBlockSize);
+  };
+
+  std::thread t1(task);
+  std::thread t2(task);
+
+  go.set_value();
+
+  t1.join();
+  t2.join();
 }
