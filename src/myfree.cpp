@@ -6,6 +6,17 @@ void myfree(void* payload) {
   auto* target = GetMemoryHeader(payload);
   target->is_free = true;
 
+  --allocated_count;
+  if (allocated_count == 0) {
+    if (munmap(free_list, kLargeChunkSize) == -1) {
+      perror("munmap");
+      return;
+    }
+    first_call = true;
+    free_list = nullptr;
+    return;
+  }
+
   // Coalescing
   if (free_list == target) {
     if (target->next && target->next->is_free) {

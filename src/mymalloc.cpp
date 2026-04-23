@@ -1,12 +1,12 @@
 #include <errno.h>
 #include <stdio.h>
-#include <sys/mman.h>
 
 #include "my-memory-allocator.hpp"
 
-static bool first_call{true};
+bool first_call{true};
 MemoryHeader* free_list{nullptr};
-static const size_t kLargeChunkSize{1024 * 1024};
+size_t allocated_count{0};
+const size_t kLargeChunkSize{1024 * 1024};
 
 void* mymalloc(size_t arg_size) {
   std::lock_guard<std::mutex> lock{mtx};
@@ -46,6 +46,7 @@ void* mymalloc(size_t arg_size) {
         // use witout split
         SetMemoryHeader(current_header, arg_size, false, current_header->next);
       }
+      ++allocated_count;
       return payload;
     }
     current_header = current_header->next;
