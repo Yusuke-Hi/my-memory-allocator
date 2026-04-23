@@ -28,18 +28,22 @@ void* mymalloc(size_t arg_size) {
 
   // search from the begining of free_list
   MemoryHeader* current_header = free_list;
+  const size_t kRequiredBlockSize{sizeof(MemoryHeader) + arg_size};
   while (current_header) {
-    if (current_header->is_free && current_header->size >= arg_size) {
-      // split current block
+    if (current_header->is_free && current_header->size > arg_size) {
       void* payload = static_cast<void*>(current_header + 1);
-      MemoryHeader* new_header{reinterpret_cast<MemoryHeader*>(
-          static_cast<char*>(payload) + arg_size)};
-
-      SetMemoryHeader(new_header, current_header->size - arg_size, true,
-                      current_header->next);
-      // update current_header
-      SetMemoryHeader(current_header, arg_size, false, new_header);
-
+      if (current_header->size > kRequiredBlockSize) {
+        // split current_header
+        MemoryHeader* new_header{reinterpret_cast<MemoryHeader*>(
+            static_cast<char*>(payload) + arg_size)};
+        SetMemoryHeader(new_header, current_header->size - kRequiredBlockSize,
+                        true, current_header->next);
+        // update current_header
+        SetMemoryHeader(current_header, arg_size, false, new_header);
+      } else {
+        // use witout split
+        SetMemoryHeader(current_header, arg_size, false, current_header->next);
+      }
       return payload;
     }
     current_header = current_header->next;
