@@ -26,9 +26,11 @@ void* mymalloc(size_t arg_size) {
     first_call = false;
   }
 
+  // alignment
+  arg_size = (arg_size + 7) & (~7);
+  const size_t kRequiredBlockSize{sizeof(MemoryHeader) + arg_size};
   // search from the begining of free_list
   MemoryHeader* current_header = free_list;
-  const size_t kRequiredBlockSize{sizeof(MemoryHeader) + arg_size};
   while (current_header) {
     if (current_header->is_free && current_header->size > arg_size) {
       void* payload = static_cast<void*>(current_header + 1);
