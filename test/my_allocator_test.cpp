@@ -95,3 +95,14 @@ TEST(MyMallocTest, MultiThread) {
   t1.join();
   t2.join();
 }
+
+TEST(MyMallocTest, Alignment) {
+  void* p1 = mymalloc(1);
+  void* p2 = mymalloc(kBasicBlockSize);
+
+  EXPECT_EQ(reinterpret_cast<uintptr_t>(p1) % 8, 0u);
+  EXPECT_EQ(reinterpret_cast<uintptr_t>(p2) % 8, 0u);
+
+  myfree(p1);
+  myfree(p2);
+}
