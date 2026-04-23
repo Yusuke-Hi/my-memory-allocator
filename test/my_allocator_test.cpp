@@ -13,6 +13,21 @@ TEST(MyMallocTest, BasicAllocation) {
   myfree(p);
 }
 
+TEST(MyMallocTest, WithoutSplit) {
+  void* p1 = mymalloc(16);
+  // to block coalescing
+  void* p2 = mymalloc(kBasicBlockSize);
+
+  myfree(p1);
+  // allocation witout split.
+  void* p3 = mymalloc(8);
+  EXPECT_EQ(p3, p1);
+  EXPECT_EQ(GetMemoryHeader(p3)->next, GetMemoryHeader(p2));
+
+  myfree(p2);
+  myfree(p3);
+}
+
 TEST(MyMallocTest, CoalesceNext) {
   void* p1 = mymalloc(kBasicBlockSize);
   void* p2 = mymalloc(kBasicBlockSize);
