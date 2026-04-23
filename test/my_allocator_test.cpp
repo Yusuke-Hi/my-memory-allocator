@@ -121,3 +121,19 @@ TEST(MyMallocTest, Alignment) {
   myfree(p1);
   myfree(p2);
 }
+
+TEST(MyMallocTest, ReInitialization) {
+  void* p1 = mymalloc(kBasicBlockSize);
+  void* p2 = mymalloc(kBasicBlockSize);
+  void* p3 = mymalloc(kBasicBlockSize);
+
+  myfree(p1);
+  myfree(p2);
+  myfree(p3);
+
+  void* p4 = mymalloc(kBasicBlockSize);
+  EXPECT_EQ(GetMemoryHeader(p4)->next->size,
+            kLargeChunkSize - (2 * sizeof(MemoryHeader) + kBasicBlockSize));
+
+  myfree(p4);
+}
